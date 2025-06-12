@@ -2,14 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include "Asiento.h"
-
-#ifdef _WIN32
 #include <conio.h>
-inline void gotoxy(int x, int y) { ::gotoxy(x, y); }
-#else
-inline void gotoxy(int, int) {} // No hace nada en otros sistemas
-#endif
-
 using namespace std;
 
 class SeccionLugar {
