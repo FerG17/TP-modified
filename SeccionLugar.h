@@ -3,7 +3,11 @@
 #include <fstream>
 #include "Asiento.h"
 #include <conio.h>
+
 using namespace std;
+
+// Declaración para evitar advertencias del compilador, la implementación real la proporciona <conio.h>
+void gotoxy(int x, int y);
 
 class SeccionLugar {
 private:
@@ -17,10 +21,10 @@ public:
         : nombre(nombre), cantidadAsientos(cantidadAsientos) {
         asientos = new Asiento[cantidadAsientos];
         for (int i = 0; i < cantidadAsientos; ++i)
-            asientos[i] = Asiento(i + 1); // Inicializa cada asiento con un número
+            asientos[i] = Asiento(i + 1);
     }
 
-    // Regla de tres: copia
+    // Constructor de copia
     SeccionLugar(const SeccionLugar& otra)
         : nombre(otra.nombre), cantidadAsientos(otra.cantidadAsientos) {
         asientos = new Asiento[cantidadAsientos];
@@ -28,7 +32,7 @@ public:
             asientos[i] = otra.asientos[i];
     }
 
-    // Regla de tres: asignación
+    // Operador de asignación
     SeccionLugar& operator=(const SeccionLugar& otra) {
         if (this != &otra) {
             delete[] asientos;
@@ -81,23 +85,19 @@ public:
     Asiento* getAsientos() { return asientos; }
     const Asiento* getAsientos() const { return asientos; }
 
-    // Persistencia: Guardar asientos en archivo
+    // Guardar asientos de la sección en un archivo
     void guardarAsientos(ofstream& out) const {
-        out << nombre << " " << cantidadAsientos << "\n";
+        out << nombre << " " << cantidadAsientos << endl;
         for (int i = 0; i < cantidadAsientos; ++i)
-            out << asientos[i].getNumero() << " " << asientos[i].estaDisponible() << "\n";
+            asientos[i].guardar(out);
     }
 
-    // Persistencia: Cargar asientos desde archivo
+    // Cargar asientos de la sección desde un archivo
     void cargarAsientos(ifstream& in) {
         in >> nombre >> cantidadAsientos;
         delete[] asientos;
         asientos = new Asiento[cantidadAsientos];
-        for (int i = 0; i < cantidadAsientos; ++i) {
-            int num, disponible;
-            in >> num >> disponible;
-            asientos[i] = Asiento(num);
-            if (!disponible) asientos[i].reservar();
-        }
+        for (int i = 0; i < cantidadAsientos; ++i)
+            asientos[i].cargar(in);
     }
 };
