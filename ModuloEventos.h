@@ -14,27 +14,41 @@ class ModuloEventos {
 private:
     Lugar lugar;
     GestorEventos gestor;
+
 public:
     ModuloEventos() : lugar("Estadio Nacional") {}
+
     void cargarEventosDeEjemplo() {
-        Evento* e1 = new Concierto("RockFest", "2025-06-10", "Estadio San Marcos", 150, "Los Riffs");
-        Evento* e2 = new Concierto("MetalVibe", "2025-07-01", "Estadio San Marcos", 200, "Iron Scream");
-        Evento* e3 = new ObraTeatral("Hamlet", "2025-08-15", "Teatro municpal", 90, "Juan Perez", 120);
-        Evento* e4 = new Festival("Book Fest", "2025-06-07", "Estadio Nacional", 50, 2, "Libros");
-        Evento* e5 = new Deporte("El Clasico", "2025-08-12", "Estadio Nacional", 70, "Universitario", "Alianza Lima");
+        Evento* e1 = new Concierto("RockFest", "2025-06-10", 150, "Los Riffs");
+        Evento* e2 = new Concierto("MetalVibe", "2025-07-01", 200, "Iron Scream");
+        Evento* e3 = new ObraTeatral("Hamlet", "2025-08-15", 90, "Juan Perez", 120);
+        Evento* e4 = new Festival("Book Fest", "2025-06-07", 50, 2, "Libros");
+        Evento* e5 = new Deporte("El Clasico", "2025-08-12", 70, "Universitario", "Alianza Lima");
         gestor.agregarEvento(e1);
         gestor.agregarEvento(e2);
         gestor.agregarEvento(e3);
         gestor.agregarEvento(e4);
         gestor.agregarEvento(e5);
+
     }
+    void mostrarAsientosInverso(const SeccionLugar& seccion, int x = 45, int y = 18) const {
+        for (int i = seccion.getCantidadAsientos() - 1; i >= 0; --i) {
+            gotoxy(x, y + (seccion.getCantidadAsientos() - 1 - i));
+            const Asiento* asientos = seccion.getAsientos();
+            cout << "Asiento [" << asientos[i].getNumero() << "] "
+                << (asientos[i].estaDisponible() ? "Disponible" : "Ocupado") << endl;
+        }
+    }
+
     void ejecutar() {
         cargarEventosDeEjemplo();
+
         int opcion;
         int opcionA;
         do {
             limpiarYCentrarPantalla(); 
             mostrarTituloModulo("MODULO EVENTOS");
+
             int y = 50;
             gotoxy(45, y++); cout << "1. Ver todos los eventos";
             gotoxy(45, y++); cout << "2. Buscar por mes (MM)";
@@ -44,13 +58,16 @@ public:
             gotoxy(45, y++); cout << "0. Volver al menu principal";
             gotoxy(45, y++); cout << "Opcion: ";
             gotoxy(53, y - 1); cin >> opcion;
+
             system("cls");
+
             switch (opcion) {
             case 1:
                 limpiarYCentrarPantalla();
                 gestor.mostrarEventos();
                 pausarContinuar();
                 break;
+
             case 2: {
                 limpiarYCentrarPantalla();
                 gotoxy(45, 30); cout << "Ingrese mes (ej: 06): ";
@@ -69,11 +86,13 @@ public:
                 pausarContinuar();
                 break;
             }
+
             case 3:
                 limpiarYCentrarPantalla();
                 gestor.historialPop();
                 pausarContinuar();
                 break;
+
             case 4: {
                 limpiarYCentrarPantalla();
                 gotoxy(45, 28); cout << "EVENTOS DISPONIBLES";
@@ -82,6 +101,7 @@ public:
                     cout << i + 1 << ". ";
                     gestor.getEventos().obtener(i)->mostrar();
                 }
+
                 int seleccion;
                 gotoxy(45, 40); cout << "Seleccione un evento: ";
                 cin >> seleccion;
@@ -90,6 +110,7 @@ public:
                     pausarContinuar();
                     break;
                 }
+
                 Evento* evento = gestor.getEventos().obtener(seleccion - 1);
                 limpiarYCentrarPantalla();
                 gotoxy(45, 30); cout << "ASIENTOS PARA: " << evento->getNombre();
@@ -99,8 +120,9 @@ public:
                 gotoxy(45, 35); cout << "Seleccione una opcion: ";
                 cin >> opcionA;
                 system("cls");
+
                 switch (opcionA) {
-                case 1: evento->getSeccionPrincipal()->mostrarAsientos(); break;
+                case 1: evento->getSeccion()->mostrarAsientos(); break;
                 case 2: evento->getSeccionGeneral()->mostrarAsientos(); break;
                 case 3: evento->getSeccionVIP()->mostrarAsientos(); break;
                 default:
@@ -109,6 +131,7 @@ public:
                 pausarContinuar();
                 break;
             }
+
             case 5: {
                 limpiarYCentrarPantalla();
                 gotoxy(45, 28); cout << "EVENTOS DISPONIBLES";
@@ -117,6 +140,7 @@ public:
                     cout << i + 1 << ". ";
                     gestor.getEventos().obtener(i)->mostrar();
                 }
+
                 int seleccion;
                 gotoxy(45, 40); cout << "Seleccione un evento: ";
                 cin >> seleccion;
@@ -125,6 +149,7 @@ public:
                     pausarContinuar();
                     break;
                 }
+
                 Evento* evento = gestor.getEventos().obtener(seleccion - 1);
                 limpiarYCentrarPantalla();
                 gotoxy(45, 30); cout << "ASIENTOS PARA: " << evento->getNombre();
@@ -134,16 +159,29 @@ public:
                 gotoxy(45, 35); cout << "Seleccione una opcion: ";
                 cin >> opcionA;
                 system("cls");
+
+                switch (opcionA) {
+                case 1: evento->getSeccion()->mostrarAsientosInverso(); break;
+                case 2: evento->getSeccionGeneral()->mostrarAsientosInverso(); break;
+                case 3: evento->getSeccionVIP()->mostrarAsientosInverso(); break;
+                default:
+                    gotoxy(45, 30); cout << "Opcion invalida.";
+                }
                 pausarContinuar();
                 break;
             }
+
             case 0:
                 gotoxy(45, 30); cout << "Saliendo del modulo eventos...";
                 break;
+
             default:
                 gotoxy(45, 30); cout << "Opcion invalida.";
                 pausarContinuar();
             }
+
         } while (opcion != 0);
     }
+
+
 };
