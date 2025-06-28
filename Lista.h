@@ -35,6 +35,9 @@ public:
     Lista<T> filtrar(function<bool(T)> condicion);
     void modificar(size_t pos, T nuevoValor);
     void forEach(function<void(T&)> accion);
+    void ordenarQuick(function<bool(T, T)> comparador);
+    Nodo<T>* quickSortInterno(Nodo<T>* cabeza, function<bool(T, T)> comparador);
+    Nodo<T>* concatenarListas(Nodo<T>* menor, Nodo<T>* igual, Nodo<T>* mayor);
 };
 template<class T>
 Lista<T>::~Lista() {
@@ -59,22 +62,26 @@ void Lista<T>::insertarInicio(T v) {
     }
     longitud++;
 }
+
+//ANALISIS 1
+
 template<class T>
 void Lista<T>::insertarFinal(T v) {
-    Nodo<T>* nuevo = new Nodo<T>(v);
+    Nodo<T>* nuevo = new Nodo<T>(v); //1
 
-    if (inicio == nullptr) {
-        inicio = nuevo;
+    if (inicio == nullptr) { //1-->+interno
+        inicio = nuevo; //1
     }
     else {
-        Nodo<T>* temp = inicio;
-        while (temp->siguiente != nullptr) {
-            temp = temp->siguiente;
+        Nodo<T>* temp = inicio; //1
+        while (temp->siguiente != nullptr) { //n
+            temp = temp->siguiente; //1
         }
-        temp->siguiente = nuevo;
+        temp->siguiente = nuevo; //1
     }
-    longitud++;
-}
+    longitud++; //1
+} //7+n= O(n)
+
 template<class T>
 void Lista<T>::insertarOrdenado(T valor, function<bool(T, T)> comparador) {
     Nodo<T>* nuevo = new Nodo<T>(valor);
@@ -134,6 +141,7 @@ T Lista<T>::obtener(size_t pos) const {
     }
     return temp->valor;
 }
+
 template<class T>
 void Lista<T>::eliminar(size_t pos) {
     if (estaVacia() || pos >= longitud) {
@@ -161,29 +169,33 @@ void Lista<T>::eliminar(size_t pos) {
 
     longitud--;
 }
+
+//ANALISIS 7
+
 template<class T>
 void Lista<T>::eliminarValor(T v) {
-    if (estaVacia()) {
+    if (estaVacia()) {//1
         return;
     }
-    if (inicio->valor == v) {
-        Nodo<T>* temp = inicio;
-        inicio = inicio->siguiente;
+    if (inicio->valor == v) {//1
+        Nodo<T>* temp = inicio;//1
+        inicio = inicio->siguiente;//1
         delete temp;
-        longitud--;
+        longitud--;//1
         return;
     }
-    Nodo<T>* actual = inicio;
-    while (actual->siguiente != nullptr && actual->siguiente->valor != v) {
-        actual = actual->siguiente;
+    Nodo<T>* actual = inicio;//1
+    while (actual->siguiente != nullptr && actual->siguiente->valor != v) {//n
+        actual = actual->siguiente;//1
     }
-    if (actual->siguiente != nullptr) {
-        Nodo<T>* temp = actual->siguiente;
-        actual->siguiente = temp->siguiente;
-        delete temp;
-        longitud--;
-    }
-}
+    if (actual->siguiente != nullptr) {//1
+        Nodo<T>* temp = actual->siguiente;//1
+        actual->siguiente = temp->siguiente;//1
+        delete temp;//1
+        longitud--;//1
+    } 
+}//n+12 = O(n)
+
 template<class T>
 size_t Lista<T>::tamaño() const {
     return longitud;
@@ -212,42 +224,52 @@ void Lista<T>::mostrar(function<void(T)> mostrarElemento) {
     }
     cout << endl;
 }
+
+
+//ANALISIS 2
+
 template<class T>
 void Lista<T>::ordenar(function<bool(T, T)> comparador) {
-    if (estaVacia() || longitud == 1) {
+    if (estaVacia() || longitud == 1) { //1
         return;
     }
     bool intercambio;
     Nodo<T>* actual;
-    Nodo<T>* siguiente = nullptr;
+    Nodo<T>* siguiente = nullptr; //1
 
-    do {
-        intercambio = false;
-        actual = inicio;
-        while (actual->siguiente != siguiente) {
-            if (comparador(actual->valor, actual->siguiente->valor)) {
-                T temp = actual->valor;
-                actual->valor = actual->siguiente->valor;
+    do { //n
+        intercambio = false; //1
+        actual = inicio; //1
+        while (actual->siguiente != siguiente) { //n*n
+            if (comparador(actual->valor, actual->siguiente->valor)) { //1
+                T temp = actual->valor;//1
+                actual->valor = actual->siguiente->valor;//1
                 actual->siguiente->valor = temp;
-                intercambio = true;
+                intercambio = true;//1
             }
-            actual = actual->siguiente;
+            actual = actual->siguiente;//1
         }
-        siguiente = actual;
-    } while (intercambio);
-}
+        siguiente = actual;//1
+    } while (intercambio);//n*n
+} //n*n+10 = O(n^2)
+
+
+//ANALISIS 3
 template<class T>
 T Lista<T>::buscar(function<bool(T)> condicion) {
-    Nodo<T>* temp = inicio;
+    Nodo<T>* temp = inicio; //1
 
-    while (temp != nullptr) {
-        if (condicion(temp->valor)) {
+    while (temp != nullptr) { //n
+        if (condicion(temp->valor)) { //1
             return temp->valor;
         }
-        temp = temp->siguiente;
+        temp = temp->siguiente; //1
     }
     return T();
-}
+}//n+3= O(n)
+
+
+
 template<class T>
 Lista<T> Lista<T>::filtrar(function<bool(T)> condicion) {
     Lista<T> resultado;
@@ -282,5 +304,57 @@ void Lista<T>::forEach(function<void(T&)> accion) {
         accion(temp->valor);
         temp = temp->siguiente;
     }
+}
+
+
+//ORDENAMIENTO AVANZADO QUICKSORT
+
+template<class T>
+Nodo<T>* Lista<T>::concatenarListas(Nodo<T>* menor, Nodo<T>* igual, Nodo<T>* mayor) {
+    Nodo<T>* cabeza = nullptr, ** ultimo = &cabeza;
+
+    for (Nodo<T>* lista : { menor, igual, mayor }) {
+        while (lista) {
+            *ultimo = lista;
+            ultimo = &((*ultimo)->siguiente);
+            lista = lista->siguiente;
+        }
+    }
+    *ultimo = nullptr;
+    return cabeza;
+}
+
+template<class T>
+Nodo<T>* Lista<T>::quickSortInterno(Nodo<T>* cabeza, function<bool(T, T)> comparador) {
+    if (!cabeza || !cabeza->siguiente) return cabeza;
+    T pivote = cabeza->valor;  
+    Nodo<T>* menor = nullptr;   
+    Nodo<T>* igual = nullptr;  
+    Nodo<T>* mayor = nullptr;    
+    Nodo<T>* actual = cabeza;
+    while (actual) {
+        Nodo<T>* siguiente = actual->siguiente;
+        if (comparador(actual->valor, pivote)) {
+            actual->siguiente = menor;
+            menor = actual;
+        }
+        else if (comparador(pivote, actual->valor)) {
+            actual->siguiente = mayor;
+            mayor = actual;
+        }
+        else {
+            actual->siguiente = igual;
+            igual = actual;
+        }
+        actual = siguiente;
+    }
+    menor = quickSortInterno(menor, comparador);
+    mayor = quickSortInterno(mayor, comparador);
+    return concatenarListas(menor, igual, mayor);
+}
+
+template <class T>
+void Lista<T>::ordenarQuick(function<bool(T, T)> comparador) {
+    inicio = quickSortInterno(inicio, comparador);
 }
 #endif
