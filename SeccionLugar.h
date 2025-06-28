@@ -100,4 +100,12 @@ public:
         for (int i = 0; i < cantidadAsientos; ++i)
             asientos[i].cargar(in);
     }
+    void mostrarAsientosInverso(const SeccionLugar& seccion, int x = 45, int y = 18) const {
+        for (int i = seccion.getCantidadAsientos() - 1; i >= 0; --i) {
+            gotoxy(x, y + (seccion.getCantidadAsientos() - 1 - i));
+            const Asiento* asientos = seccion.getAsientos();
+            cout << "Asiento [" << asientos[i].getNumero() << "] "
+                << (asientos[i].estaDisponible() ? "Disponible" : "Ocupado") << endl;
+        }
+    }
 };
